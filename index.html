@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Pré-Prova</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#173D2B">
+<link rel="icon" href="icon-192.png">
+<style>
+:root{--bg:#EDF1EE;--card:#fff;--ink:#14201A;--mut:#56665C;--line:#CBD6CF;--pri:#173D2B;--onp:#fff;--ok:#1B7F4B;--okb:#DDF1E5;--er:#B3261E;--erb:#F8E1DE;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0F1612;--card:#19231D;--ink:#E8F0EA;--mut:#9DB0A3;--line:#2D3C33;--pri:#4E9A72;--onp:#07120C;--ok:#62C48C;--okb:#17382A;--er:#F0857D;--erb:#3E1F1C;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0F1612;--card:#19231D;--ink:#E8F0EA;--mut:#9DB0A3;--line:#2D3C33;--pri:#4E9A72;--onp:#07120C;--ok:#62C48C;--okb:#17382A;--er:#F0857D;--erb:#3E1F1C;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:680px;margin:0 auto;padding:16px 16px 60px}
+h1{font-size:22px;margin:4px 0 12px}h2{font-size:18px;margin:18px 0 6px}
+nav{display:flex;gap:6px;margin-bottom:14px}
+nav button{flex:1;min-height:48px;border:1.5px solid var(--line);border-radius:10px;background:var(--card);color:var(--mut);font:inherit;font-weight:600}
+nav button.on{background:var(--pri);color:var(--onp);border-color:var(--pri)}
+label{display:block;font-size:15px;color:var(--mut);margin:14px 0 5px}
+input,select,textarea{width:100%;font:inherit;color:var(--ink);background:var(--card);border:1.5px solid var(--line);border-radius:10px;padding:12px;min-height:48px}
+textarea{min-height:130px;font-size:15px}
+input[type=checkbox]{width:22px;height:22px;min-height:0;accent-color:var(--pri)}
+.chk{display:flex;align-items:center;gap:10px;color:var(--ink);font-size:16px;margin:10px 0}
+button{font:inherit;cursor:pointer}
+.b{width:100%;min-height:54px;margin-top:16px;border:0;border-radius:12px;background:var(--pri);color:var(--onp);font-weight:700;font-size:18px}
+.g{width:100%;min-height:46px;margin-top:10px;border:1.5px solid var(--line);border-radius:10px;background:transparent;color:var(--ink)}
+.card{background:var(--card);border:1.5px solid var(--line);border-radius:12px;padding:12px 14px;margin:10px 0}
+.mut{color:var(--mut);font-size:15px}
+.row{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.row button{border:1.5px solid var(--line);background:transparent;color:var(--er);border-radius:8px;min-height:40px;padding:0 12px}
+.alt{display:flex;gap:12px;width:100%;text-align:left;background:var(--card);color:var(--ink);border:1.5px solid var(--line);border-radius:12px;padding:13px;margin:9px 0;min-height:54px}
+.alt b{flex:0 0 26px;height:26px;border-radius:50%;background:var(--bg);display:grid;place-items:center;font-size:14px}
+.alt.ok{border-color:var(--ok);background:var(--okb)}.alt.er{border-color:var(--er);background:var(--erb)}
+.bar{height:6px;background:var(--line);border-radius:3px;overflow:hidden;margin:6px 0 10px}.bar i{display:block;height:100%;background:var(--pri)}
+.en{font-size:19px;white-space:pre-line}
+.ok-t{color:var(--ok)}.er-t{color:var(--er)}
+.vz{display:flex;gap:8px}.vz .g{margin-top:0}
+</style>
+</head>
+<body>
+<main>
+<h1>Pré-Prova</h1>
+<nav id="nav"><button data-t="1" class="on">1 Questões</button><button data-t="2">2 Gabaritos</button><button data-t="3">3 Teste</button></nav>
+
+<section id="s1">
+  <label for="nome">Nome da prova</label>
+  <input id="nome" type="text" placeholder="Ex.: IADES 2014 Metrô-DF Analista de Sistemas">
+  <label for="pdf1">PDF da prova (com texto selecionável)</label>
+  <input id="pdf1" type="file" accept="application/pdf">
+  <label for="tx1">Ou cole aqui o texto das questões</label>
+  <textarea id="tx1" placeholder="1. Enunciado...&#10;A) ...&#10;B) ..."></textarea>
+  <button class="b" id="ler">Ler questões</button>
+  <p class="mut" id="m1"></p>
+  <h2>Provas guardadas</h2>
+  <div id="lista"></div>
+  <details class="card"><summary>Backup (copiar e restaurar)</summary>
+    <textarea id="bk" placeholder="O backup aparece aqui"></textarea>
+    <button class="g" id="bkc">Gerar backup</button>
+    <button class="g" id="bkr">Restaurar do texto acima</button>
+  </details>
+</section>
+
+<section id="s2" hidden>
+  <label for="sel2">Prova</label>
+  <select id="sel2"></select>
+  <label for="pdf2">PDF do gabarito</label>
+  <input id="pdf2" type="file" accept="application/pdf">
+  <label for="tx2">Ou cole o gabarito (ex.: 1-A 2-C 3-B ou 1 A 2 C)</label>
+  <textarea id="tx2"></textarea>
+  <button class="b" id="apl">Aplicar gabarito</button>
+  <p class="mut" id="m2"></p>
+</section>
+
+<section id="s3" hidden>
+  <p class="mut" id="est"></p>
+  <h2>Provas no teste</h2>
+  <div id="provas3"></div>
+  <label for="qtd">Quantas questões</label>
+  <input id="qtd" type="number" min="1" value="10" inputmode="numeric">
+  <label class="chk"><input type="checkbox" id="soerr"> Só as que errei antes</label>
+  <button class="b" id="gerar">Gerar teste</button>
+  <p class="mut" id="m3"></p>
+  <div id="quiz" hidden></div>
+</section>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js"></script>
+<script>
+const $=s=>document.querySelector(s);
+let D={provas:{},hist:{}};
+try{D=JSON.parse(localStorage.getItem('pp3'))||D}catch(e){}
+const save=()=>{try{localStorage.setItem('pp3',JSON.stringify(D))}catch(e){}};
+function h(t,p,...k){const e=document.createElement(t);Object.assign(e,p||{});k.forEach(x=>e.append(x));return e}
+
+/* abas */
+document.querySelectorAll('#nav button').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('#nav button').forEach(x=>x.classList.toggle('on',x===b));
+  ['1','2','3'].forEach(n=>$('#s'+n).hidden=n!==b.dataset.t);
+  speechSynthesis&&speechSynthesis.cancel();draw();
+});
+
+/* PDF -> texto */
+async function pdfTexto(f){
+  pdfjsLib.GlobalWorkerOptions.workerSrc='worker';
+  const pdf=await pdfjsLib.getDocument({data:await f.arrayBuffer()}).promise;
+  let out='';
+  for(let p=1;p<=pdf.numPages;p++){
+    const c=await(await pdf.getPage(p)).getTextContent();
+    let y=null,ln='';
+    for(const it of c.items){
+      const yy=it.transform[5];
+      if(y!==null&&Math.abs(yy-y)>3){out+=ln.trim()+'\n';ln=''}
+      ln+=it.str+' ';y=yy;
+    }
+    out+=ln.trim()+'\n';
+  }
+  return out;
+}
+async function textoDe(fileEl,taEl,msg){
+  let t=taEl.value;
+  if(fileEl.files[0]){
+    msg.textContent='Lendo o PDF…';
+    try{t=await pdfTexto(fileEl.files[0])}catch(e){msg.textContent='Não consegui ler este PDF (pode ser imagem escaneada). Copie o texto e cole na caixa.';return ''}
+  }
+  return t;
+}
+
+/* etapa 1: questões */
+function blocoAlts(b){
+  const re=/(?:^|\n|\s)\(([A-E])\)\s+|(?:^|\n)\s*([A-E])[).]\s+/g;let m,pos=[];
+  while((m=re.exec(b)))pos.push({L:m[1]||m[2],s:m.index,e:re.lastIndex});
+  const seq=[];let nx='A';
+  for(const p of pos)if(p.L===nx){seq.push(p);nx=String.fromCharCode(nx.charCodeAt(0)+1)}
+  if(seq.length<2)return null;
+  const alts={};
+  seq.forEach((p,i)=>alts[p.L]=b.slice(p.e,i+1<seq.length?seq[i+1].s:b.length).replace(/\s+/g,' ').trim());
+  return{en:b.slice(0,seq[0].s).replace(/\s+/g,' ').trim(),alts};
+}
+function parseQ(t){
+  t=t.replace(/\r/g,'').replace(/[ \t]+/g,' ');
+  const col=re=>{const r=[];let m;while((m=re.exec(t)))r.push({n:+m[1],s:m.index,e:re.lastIndex});return r};
+  let ms=col(/(?:^|\n)\s*QUEST[ÃA]O\s+(\d{1,3})\b[^\n]*\n/gi);
+  if(ms.length<3)ms=col(/(?:^|\n)\s*(\d{1,3})\s*[.)]\s+/g);
+  const out=[];
+  ms.forEach((m,i)=>{
+    const b=blocoAlts(t.slice(m.e,i+1<ms.length?ms[i+1].s:t.length));
+    if(b&&b.en)out.push({n:m.n,en:b.en,alts:b.alts,g:''});
+  });
+  return out;
+}
+$('#ler').onclick=async()=>{
+  const nome=$('#nome').value.trim();
+  if(!nome){$('#m1').textContent='Dê um nome à prova.';return}
+  const t=await textoDe($('#pdf1'),$('#tx1'),$('#m1'));
+  if(!t)return;
+  const q=parseQ(t);
+  if(!q.length){$('#m1').textContent='Não encontrei questões. Confira se o texto tem numeração (1., 2.) e alternativas (A), B)).';return}
+  const ant=D.provas[nome];
+  if(ant)q.forEach(x=>{const o=ant.q.find(y=>y.n===x.n);if(o)x.g=o.g});
+  D.provas[nome]={q};save();
+  $('#m1').textContent=q.length+' questões gravadas em “'+nome+'”. Agora vá para a etapa 2.';
+  draw();
+};
+$('#bkc').onclick=()=>{$('#bk').value=JSON.stringify(D)};
+$('#bkr').onclick=()=>{try{const x=JSON.parse($('#bk').value);if(x&&x.provas){D=x;save();draw();$('#m1').textContent='Backup restaurado.'}}catch(e){$('#m1').textContent='Texto de backup inválido.'}};
+
+/* etapa 2: gabaritos */
+$('#apl').onclick=async()=>{
+  const nome=$('#sel2').value,P=D.provas[nome];
+  if(!P){$('#m2').textContent='Grave uma prova na etapa 1.';return}
+  const t=await textoDe($('#pdf2'),$('#tx2'),$('#m2'));
+  if(!t)return;
+  const mp={};
+  for(const m of t.matchAll(/(\d{1,3})\s*[-–:.)]?\s*([A-Ea-e])(?![A-Za-zÀ-ú])/g))mp[+m[1]]=m[2].toUpperCase();
+  let ok=0;P.q.forEach(q=>{if(mp[q.n]&&q.alts[mp[q.n]]){q.g=mp[q.n];ok++}});
+  save();
+  const falta=P.q.filter(q=>!q.g).map(q=>q.n);
+  $('#m2').textContent=ok+' de '+P.q.length+' gabaritos aplicados.'+(falta.length?' Sem gabarito: '+falta.join(', ')+'.':' Tudo certo, vá para a etapa 3.');
+  draw();
+};
+
+/* etapa 3: teste */
+let Q=null;
+$('#gerar').onclick=()=>{
+  const sel=[...document.querySelectorAll('#provas3 input:checked')].map(x=>x.value);
+  let l=[];
+  sel.forEach(n=>D.provas[n].q.forEach(q=>{if(q.g)l.push({p:n,q,k:n+'#'+q.n})}));
+  if($('#soerr').checked)l=l.filter(x=>{const H=D.hist[x.k];return H&&H.e>H.c});
+  if(!l.length){$('#m3').textContent='Nenhuma questão com gabarito para esse filtro.';return}
+  for(let i=l.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[l[i],l[j]]=[l[j],l[i]]}
+  Q={l:l.slice(0,Math.max(1,+$('#qtd').value||10)),i:0,res:[]};
+  $('#m3').textContent='';$('#quiz').hidden=false;mostra();
+};
+function fala(t){if(!window.speechSynthesis)return;speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang='pt-BR';speechSynthesis.speak(u)}
+function mostra(){
+  const z=$('#quiz');z.innerHTML='';
+  if(Q.i>=Q.l.length)return fim();
+  const it=Q.l[Q.i],q=it.q;
+  const txt=q.en+'. '+Object.keys(q.alts).map(L=>'Alternativa '+L+'. '+q.alts[L]).join('. ');
+  z.append(h('p',{className:'mut',textContent:'Questão '+(Q.i+1)+' de '+Q.l.length+' · '+it.p}),
+    h('div',{className:'bar'},h('i',{style:'width:'+(Q.i/Q.l.length*100)+'%'})),
+    h('p',{className:'en',textContent:q.en}),
+    h('div',{className:'vz'},h('button',{className:'g',textContent:'▶ Ouvir',onclick:()=>fala(txt)}),h('button',{className:'g',textContent:'■ Parar',onclick:()=>speechSynthesis.cancel()})));
+  const box=h('div');z.append(box);
+  Object.keys(q.alts).forEach(L=>{
+    const b=h('button',{className:'alt'},h('b',{textContent:L}),h('span',{textContent:q.alts[L]}));
+    b.onclick=()=>{
+      speechSynthesis&&speechSynthesis.cancel();
+      const c=L===q.g;
+      box.querySelectorAll('.alt').forEach(x=>{x.disabled=true;const l=x.firstChild.textContent;if(l===q.g)x.classList.add('ok');else if(l===L)x.classList.add('er')});
+      const H=D.hist[it.k]||(D.hist[it.k]={c:0,e:0});c?H.c++:H.e++;save();
+      Q.res.push({it,c,m:L});
+      z.append(h('p',{className:c?'ok-t':'er-t',textContent:c?'Acertou':'Errou. O gabarito é '+q.g+'.'}),
+        h('button',{className:'b',textContent:Q.i+1<Q.l.length?'Próxima':'Ver resultado',onclick:()=>{Q.i++;mostra()}}));
+    };
+    box.append(b);
+  });
+}
+function fim(){
+  const z=$('#quiz'),ac=Q.res.filter(r=>r.c).length,por={};
+  Q.res.forEach(r=>{const p=por[r.it.p]||(por[r.it.p]={c:0,t:0});p.t++;if(r.c)p.c++});
+  z.innerHTML='';
+  z.append(h('h2',{textContent:Math.round(ac/Q.res.length*100)+'% de acerto ('+ac+' de '+Q.res.length+')'}));
+  Object.keys(por).forEach(n=>z.append(h('p',{className:'mut',textContent:n+': '+por[n].c+'/'+por[n].t})));
+  const er=Q.res.filter(r=>!r.c);
+  if(er.length){z.append(h('h2',{textContent:'Para revisar'}));
+    er.forEach(r=>z.append(h('div',{className:'card'},h('div',{textContent:r.it.q.en}),h('p',{className:'mut',textContent:'Você marcou '+r.m+'. Correta: '+r.it.q.g+') '+r.it.q.alts[r.it.q.g]}))))}
+  z.append(h('button',{className:'b',textContent:'Novo teste',onclick:()=>{$('#quiz').hidden=true;draw();window.scrollTo(0,0)}}));
+  draw();
+}
+
+/* desenho das listas */
+function draw(){
+  const ns=Object.keys(D.provas);
+  const L=$('#lista');L.innerHTML='';
+  if(!ns.length)L.append(h('p',{className:'mut',textContent:'Nenhuma prova ainda.'}));
+  ns.forEach(n=>{const P=D.provas[n],cg=P.q.filter(q=>q.g).length;
+    L.append(h('div',{className:'card row'},h('div',{},h('b',{textContent:n}),h('div',{className:'mut',textContent:P.q.length+' questões · '+cg+' com gabarito'})),
+      h('button',{textContent:'Apagar',onclick:()=>{if(confirm('Apagar “'+n+'”?')){delete D.provas[n];save();draw()}}})))});
+  const s=$('#sel2'),v=s.value;s.innerHTML='';ns.forEach(n=>s.append(h('option',{value:n,textContent:n})));if(ns.includes(v))s.value=v;
+  const p3=$('#provas3');p3.innerHTML='';
+  ns.forEach(n=>{const cg=D.provas[n].q.filter(q=>q.g).length;
+    const i=h('input',{type:'checkbox',value:n,checked:cg>0,disabled:!cg});
+    p3.append(h('label',{className:'chk'},i,n+' ('+cg+' prontas)'))});
+  const hs=Object.values(D.hist),c=hs.reduce((a,x)=>a+x.c,0),t=c+hs.reduce((a,x)=>a+x.e,0);
+  $('#est').textContent=t?'Respondidas até agora: '+t+' · acerto geral '+Math.round(c/t*100)+'%':'Você ainda não fez nenhum teste.';
+}
+draw();
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+</script>
+</body>
+</html>
