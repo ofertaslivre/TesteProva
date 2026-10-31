@@ -61,6 +61,14 @@ button{font:inherit;cursor:pointer}
     <button class="g" id="bkc">Gerar backup</button>
     <button class="g" id="bkr">Restaurar do texto acima</button>
   </details>
+  <details class="card" id="nv"><summary>Nuvem (Google Planilhas)</summary>
+    <label for="nvu">Endereço do Apps Script (termina em /exec)</label>
+    <input id="nvu" type="text">
+    <label for="nvt">Senha (a mesma da propriedade TOKEN)</label>
+    <input id="nvt" type="password" autocomplete="off">
+    <button class="g" id="nvb">Conectar e sincronizar</button>
+    <p class="mut" id="ms"></p>
+  </details>
 </section>
 
 <section id="s2" hidden>
@@ -93,7 +101,7 @@ button{font:inherit;cursor:pointer}
 const $=s=>document.querySelector(s);
 let D={provas:{},hist:{}};
 try{D=JSON.parse(localStorage.getItem('pp3'))||D}catch(e){}
-const save=()=>{try{localStorage.setItem('pp3',JSON.stringify(D))}catch(e){}};
+const save=()=>{try{localStorage.setItem('pp3',JSON.stringify(D))}catch(e){};clearTimeout(tm);tm=setTimeout(empurrar,1500)};
 function h(t,p,...k){const e=document.createElement(t);Object.assign(e,p||{});k.forEach(x=>e.append(x));return e}
 
 /* abas */
@@ -249,6 +257,37 @@ function draw(){
   const hs=Object.values(D.hist),c=hs.reduce((a,x)=>a+x.c,0),t=c+hs.reduce((a,x)=>a+x.e,0);
   $('#est').textContent=t?'Respondidas até agora: '+t+' · acerto geral '+Math.round(c/t*100)+'%':'Você ainda não fez nenhum teste.';
 }
+/* nuvem: Google Planilhas via Apps Script */
+let CF={};try{CF=JSON.parse(localStorage.getItem('pp3cfg'))||{}}catch(e){}
+let puxou=false,tm=null;
+const ms=t=>{$('#ms').textContent=t};
+async function api(acao,dados){
+  const r=await fetch(CF.url,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({token:CF.token,acao,dados})});
+  const j=await r.json();if(!j.ok)throw new Error(j.erro||'Falha');return j.dados;
+}
+async function empurrar(){
+  if(!puxou||!CF.url)return;
+  try{await api('salvar',D);ms('Salvo na nuvem.')}catch(e){ms('Não salvou na nuvem: '+e.message)}
+}
+async function puxar(){
+  if(!CF.url||!CF.token)return;
+  ms('Sincronizando…');
+  try{
+    const c=await api('carregar'),m=JSON.parse(JSON.stringify(c));
+    Object.keys(D.provas).forEach(n=>{if(!m.provas[n])m.provas[n]=D.provas[n]});
+    Object.keys(D.hist).forEach(k=>{const a=m.hist[k],b=D.hist[k];if(!a||b.c+b.e>a.c+a.e)m.hist[k]=b});
+    D=m;puxou=true;
+    try{localStorage.setItem('pp3',JSON.stringify(D))}catch(e){}
+    await empurrar();draw();ms('Nuvem conectada e sincronizada.');
+  }catch(e){ms('Sem conexão com a nuvem: '+e.message)}
+}
+$('#nvu').value=CF.url||'';$('#nvt').value=CF.token||'';
+$('#nvb').onclick=()=>{
+  CF={url:$('#nvu').value.trim(),token:$('#nvt').value};
+  try{localStorage.setItem('pp3cfg',JSON.stringify(CF))}catch(e){}
+  puxar();
+};
+puxar();
 draw();
 if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
 </script>
