@@ -62,6 +62,7 @@ button{font:inherit;cursor:pointer}
     <label for="edn">Questão</label><select id="edn"></select>
     <div class="vz" style="margin-top:8px"><button class="g" id="edp">◀ Anterior</button><button class="g" id="edq">Próxima ▶</button></div>
     <div id="edf">
+      <label for="edno">Número da questão</label><input id="edno" type="number" inputmode="numeric">
       <label for="ede">Enunciado</label><textarea id="ede"></textarea>
       <div id="edalts"></div>
       <label for="edg">Gabarito</label>
@@ -92,7 +93,7 @@ button{font:inherit;cursor:pointer}
   <select id="sel2"></select>
   <label for="pdf2">PDF do gabarito</label>
   <input id="pdf2" type="file" accept="application/pdf">
-  <label for="tx2">Ou cole o gabarito (ex.: 1-A 2-C 3-B ou 1 A 2 C)</label>
+  <label for="tx2">Ou cole o gabarito (ex.: 1-A 2-C 3-B ou 1 A 2 C). Se colar aqui, o PDF é ignorado</label>
   <textarea id="tx2"></textarea>
   <button class="b" id="apl">Aplicar gabarito</button>
   <p class="mut" id="m2"></p>
@@ -146,7 +147,7 @@ async function pdfTexto(f){
 }
 async function textoDe(fileEl,taEl,msg){
   let t=taEl.value;
-  if(fileEl.files[0]){
+  if(!t.trim()&&fileEl.files[0]){
     msg.textContent='Lendo o PDF…';
     try{t=await pdfTexto(fileEl.files[0])}catch(e){msg.textContent='Não consegui ler este PDF (pode ser imagem escaneada). Copie o texto e cole na caixa.';return ''}
   }
@@ -200,10 +201,17 @@ $('#apl').onclick=async()=>{
   if(!t)return;
   const mp={};
   for(const m of t.matchAll(/(\d{1,3})\s*[-–:.)]?\s*([A-Ea-e])(?![A-Za-zÀ-ú])/g))mp[+m[1]]=m[2].toUpperCase();
+  {/* gabarito em grade: uma linha de números e, logo abaixo, a linha de letras */
+    const ln=t.split('\n').map(x=>x.trim()).filter(Boolean);
+    for(let i=0;i+1<ln.length;i++){
+      const u=ln[i].split(/\s+/),v=ln[i+1].split(/\s+/);
+      if(u.length>=3&&u.length===v.length&&u.every(x=>/^\d{1,3}$/.test(x))&&v.every(x=>/^[A-Ea-e*]$/.test(x)))u.forEach((x,j)=>{mp[+x]=v[j].toUpperCase()});
+    }
+  }
   let ok=0;P.q.forEach(q=>{if(mp[q.n]&&q.alts[mp[q.n]]){q.g=mp[q.n];ok++}});
   save();
   const falta=P.q.filter(q=>!q.g).map(q=>q.n);
-  $('#m2').textContent=ok+' de '+P.q.length+' gabaritos aplicados.'+(falta.length?' Sem gabarito: '+falta.join(', ')+'.':' Tudo certo, vá para a etapa 3.');
+  $('#m2').textContent=ok+' de '+P.q.length+' gabaritos aplicados.'+(falta.length?' Sem gabarito: '+falta.join(', ')+'.':' Tudo certo, vá para a etapa 3.')+(ok?'':' Texto lido (início): “'+t.replace(/\s+/g,' ').slice(0,160)+'”');
   draw();
 };
 
@@ -286,7 +294,7 @@ function edDesenha(){
   const q=P.q[E.i];
   $('#edf').hidden=!q;
   if(!q)return;
-  s.value=E.i;$('#ede').value=q.en;
+  s.value=E.i;$('#edno').value=q.n;$('#ede').value=q.en;
   'ABCDE'.split('').forEach(L=>$('#eda'+L).value=q.alts[L]||'');
   $('#edg').value=q.g||'';
 }
@@ -297,6 +305,9 @@ $('#edx').onclick=()=>{$('#ed').hidden=true;E=null};
 $('#eds').onclick=()=>{
   const q=D.provas[E.p].q[E.i],a={};
   'ABCDE'.split('').forEach(L=>{const v=$('#eda'+L).value.trim();if(v)a[L]=v});
+  const P=D.provas[E.p],nn=+$('#edno').value||q.n;
+  if(P.q.some((x,i)=>i!==E.i&&x.n===nn)){$('#edm').textContent='Já existe a questão '+nn+' nesta prova.';return}
+  q.n=nn;P.q.sort((x,y)=>x.n-y.n);E.i=P.q.indexOf(q);
   q.en=$('#ede').value.trim();q.alts=a;
   const g=$('#edg').value;q.g=(g&&a[g])?g:'';
   save();edDesenha();draw();
