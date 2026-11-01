@@ -38,6 +38,7 @@ button{font:inherit;cursor:pointer}
 .en{font-size:19px;white-space:pre-line}
 .ok-t{color:var(--ok)}.er-t{color:var(--er)}
 .vz{display:flex;gap:8px}.vz .g{margin-top:0}
+.row .ed{color:var(--ink)}
 </style>
 </head>
 <body>
@@ -56,6 +57,21 @@ button{font:inherit;cursor:pointer}
   <p class="mut" id="m1"></p>
   <h2>Provas guardadas</h2>
   <div id="lista"></div>
+  <div id="ed" class="card" hidden>
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:10px"><b id="edt"></b><button class="g" id="edx" style="width:auto;margin:0;padding:0 14px">Fechar</button></div>
+    <label for="edn">Questão</label><select id="edn"></select>
+    <div class="vz" style="margin-top:8px"><button class="g" id="edp">◀ Anterior</button><button class="g" id="edq">Próxima ▶</button></div>
+    <div id="edf">
+      <label for="ede">Enunciado</label><textarea id="ede"></textarea>
+      <div id="edalts"></div>
+      <label for="edg">Gabarito</label>
+      <select id="edg"><option value="">Sem gabarito</option><option>A</option><option>B</option><option>C</option><option>D</option><option>E</option></select>
+      <button class="b" id="eds">Salvar questão</button>
+      <button class="g" id="edd">Apagar esta questão</button>
+    </div>
+    <button class="g" id="edv">Adicionar questão</button>
+    <p class="mut" id="edm"></p>
+  </div>
   <details class="card"><summary>Backup (copiar e restaurar)</summary>
     <textarea id="bk" placeholder="O backup aparece aqui"></textarea>
     <button class="g" id="bkc">Gerar backup</button>
@@ -196,7 +212,7 @@ let Q=null;
 $('#gerar').onclick=()=>{
   const sel=[...document.querySelectorAll('#provas3 input:checked')].map(x=>x.value);
   let l=[];
-  sel.forEach(n=>D.provas[n].q.forEach(q=>{if(q.g)l.push({p:n,q,k:n+'#'+q.n})}));
+  sel.forEach(n=>D.provas[n].q.forEach(q=>{if(q.g&&q.en&&q.alts[q.g])l.push({p:n,q,k:n+'#'+q.n})}));
   if($('#soerr').checked)l=l.filter(x=>{const H=D.hist[x.k];return H&&H.e>H.c});
   if(!l.length){$('#m3').textContent='Nenhuma questão com gabarito para esse filtro.';return}
   for(let i=l.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[l[i],l[j]]=[l[j],l[i]]}
@@ -248,7 +264,7 @@ function draw(){
   if(!ns.length)L.append(h('p',{className:'mut',textContent:'Nenhuma prova ainda.'}));
   ns.forEach(n=>{const P=D.provas[n],cg=P.q.filter(q=>q.g).length;
     L.append(h('div',{className:'card row'},h('div',{},h('b',{textContent:n}),h('div',{className:'mut',textContent:P.q.length+' questões · '+cg+' com gabarito'})),
-      h('button',{textContent:'Apagar',onclick:()=>{if(confirm('Apagar “'+n+'”?')){delete D.provas[n];save();draw()}}})))});
+      h('button',{className:'ed',style:'margin-left:auto',textContent:'Editar',onclick:()=>abrirEd(n)}),h('button',{textContent:'Apagar',onclick:()=>{if(confirm('Apagar “'+n+'”?')){delete D.provas[n];save();draw()}}})))});
   const s=$('#sel2'),v=s.value;s.innerHTML='';ns.forEach(n=>s.append(h('option',{value:n,textContent:n})));if(ns.includes(v))s.value=v;
   const p3=$('#provas3');p3.innerHTML='';
   ns.forEach(n=>{const cg=D.provas[n].q.filter(q=>q.g).length;
@@ -257,6 +273,45 @@ function draw(){
   const hs=Object.values(D.hist),c=hs.reduce((a,x)=>a+x.c,0),t=c+hs.reduce((a,x)=>a+x.e,0);
   $('#est').textContent=t?'Respondidas até agora: '+t+' · acerto geral '+Math.round(c/t*100)+'%':'Você ainda não fez nenhum teste.';
 }
+/* editor de questões */
+let E=null;
+'ABCDE'.split('').forEach(L=>$('#edalts').append(h('label',{htmlFor:'eda'+L,textContent:'Alternativa '+L}),h('input',{id:'eda'+L,type:'text'})));
+function abrirEd(p){E={p,i:0};$('#ed').hidden=false;edDesenha();$('#ed').scrollIntoView({behavior:'smooth'})}
+function edDesenha(){
+  const P=D.provas[E&&E.p];if(!P){$('#ed').hidden=true;return}
+  E.i=Math.max(0,Math.min(E.i,P.q.length-1));
+  $('#edt').textContent=E.p;
+  const s=$('#edn');s.innerHTML='';
+  P.q.forEach((q,i)=>s.append(h('option',{value:i,textContent:'Questão '+q.n+(!q.g||!q.en||Object.keys(q.alts).length<2?' ⚠':'')})));
+  const q=P.q[E.i];
+  $('#edf').hidden=!q;
+  if(!q)return;
+  s.value=E.i;$('#ede').value=q.en;
+  'ABCDE'.split('').forEach(L=>$('#eda'+L).value=q.alts[L]||'');
+  $('#edg').value=q.g||'';
+}
+$('#edn').onchange=()=>{E.i=+$('#edn').value;edDesenha();$('#edm').textContent=''};
+$('#edp').onclick=()=>{E.i--;edDesenha();$('#edm').textContent=''};
+$('#edq').onclick=()=>{E.i++;edDesenha();$('#edm').textContent=''};
+$('#edx').onclick=()=>{$('#ed').hidden=true;E=null};
+$('#eds').onclick=()=>{
+  const q=D.provas[E.p].q[E.i],a={};
+  'ABCDE'.split('').forEach(L=>{const v=$('#eda'+L).value.trim();if(v)a[L]=v});
+  q.en=$('#ede').value.trim();q.alts=a;
+  const g=$('#edg').value;q.g=(g&&a[g])?g:'';
+  save();edDesenha();draw();
+  $('#edm').textContent=g&&!a[g]?'Essa alternativa está vazia, então o gabarito foi limpo.':'Questão salva.';
+};
+$('#edd').onclick=()=>{
+  if(!confirm('Apagar esta questão?'))return;
+  D.provas[E.p].q.splice(E.i,1);save();edDesenha();draw();$('#edm').textContent='Questão apagada.';
+};
+$('#edv').onclick=()=>{
+  const P=D.provas[E.p];
+  P.q.push({n:P.q.reduce((m,x)=>Math.max(m,x.n),0)+1,en:'',alts:{},g:''});
+  E.i=P.q.length-1;save();edDesenha();draw();$('#edm').textContent='Preencha e toque em Salvar questão.';
+};
+
 /* nuvem: Google Planilhas via Apps Script */
 let CF={};try{CF=JSON.parse(localStorage.getItem('pp3cfg'))||{}}catch(e){}
 let puxou=false,tm=null;
